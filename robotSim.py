@@ -351,7 +351,7 @@ def simuler():
     global entry9
 
     entry0.insert(END, str("\nDebut de simulation"))
-    entry0.insert(END, str(f"\nLa duree de la simulation est de {entry9.get()} secondes"))
+    entry0.insert(END, str(f"\nLa duree de la simulation est de {int(entry9.get())} secondes"))
     fig = plt.figure(figsize=(6,5),dpi=100)
     ax = fig.add_subplot(111)
     ax.invert_xaxis()
@@ -471,7 +471,7 @@ def simuler():
         org.set_data(A3pointx_graph[k-p],A3pointy_graph[k-p])
         fig.canvas.draw()
         fig.canvas.flush_events()
-        time.sleep(duree//nbrpas)
+        time.sleep(duree/nbrpas)
         z.terminate()
         
 

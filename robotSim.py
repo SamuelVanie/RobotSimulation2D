@@ -127,13 +127,6 @@ def coord_zero(A):
 
     return np.dot(matricePassage2, A)
 
-# Passage inverse, coordonnées de R0 vers R2
-def coord_inv_zero(A):
-    global matricePassage2
-    matriceInvPassage = np.linalg.inv(matricePassage2)
-
-    return np.dot(matriceInvPassage, A)
-
 
 def dessiner():
     global window
@@ -157,6 +150,7 @@ def dessiner():
 
     ax = figure.add_subplot(111)
     ax.invert_xaxis()
+    ax.grid()
     ax.plot(A[1], A[0], marker='o')
     ax.plot(0, 0, marker='o')
     ax.plot(A1[1], A1[0], marker='o')
@@ -171,75 +165,8 @@ def dessiner():
     chart_type = FigureCanvasTkAgg(figure, master=window)
     chart_type.get_tk_widget().place(x = 380, y = 105, width=380+159, height=105+223)
 
-"""
-get_pente
-@param:
-    pointA -> point 1
-    pointB -> point 2
-@desc : Retourne la pente associée aux deux points
-"""
-def get_pente(pointA, pointB):
-    return (pointB[1] - pointA[1]) / (pointB[0]-pointA[0])
 
-
-
-"""
-get_ord
-@param:
-    abs : abcisse du point
-@desc : Retourne la valeur de l'ordonnée du point en fonction de l'abcisse
-"""
-def get_ord(abs):
-    global entry6
-    global entry7
-    global entry3
-
-    
-    # Détermination des coordonnées des points
-    A = coord_zero(np.array([[float(entry3.get())], [0], [0], [1]]))
-    B = (float(entry6.get()), float(entry7.get()))
-
-    return get_pente(B, A)*abs + B[1] - get_pente(B, A)*B[0]
-
-
-"""
-get_points_list
-@param : 
-    pointA -> point 1 
-    pointB -> point 2
-    nombre -> le nombre de points à retourner
-@desc :
-    listAbscisse -> liste des abscisses des points de la droite 
-    listOrdonnee -> liste des ordonnées des points de la droite
-    listeTeta1 -> liste des angles teta1
-    listeTeta2 -> liste des angles teta2
-"""
-def get_points_list():
-    global entry8
-    global entry6
-    global entry7
-
-    global entry3
-
-    # Détermination des coordonnées des points
-    A = coord_zero(np.array([[float(entry3.get())], [0], [0], [1]]))
-
-    B = (float(entry6.get()), float(entry7.get()))
-    pas = ( B[0]-float(entry3.get()) ) / float(entry8.get())
-     
-    listAbscisse = [A[0]]
-    listOrdonnee = [A[1]]
-    for i in range(int(entry8.get())-1):
-        listAbscisse.append(A[0] + (i+1) * pas)
-        listOrdonnee.append(get_ord(listAbscisse[-1]))
-
-    listAbscisse.append(B[0])
-    listOrdonnee.append(B[1])
-
-        
-    return listAbscisse, listOrdonnee
-
-def repereA3_A2_A1(l0,l1,l2,angle1,angle2) : 
+def passage_repere_A1_A2_A3(l0,l1,l2,angle1,angle2) : 
     Lien_L0 = l0
     Lien_L1 = l1
     Lien_L2 = l2
@@ -264,7 +191,7 @@ def repereA3_A2_A1(l0,l1,l2,angle1,angle2) :
     A_0=np.array([[0],[Lien_L0],[0],[1]],dtype=np.float16)
     return A_0,primA_R0,A_R0
 
-def cal_theta(bx,by) :
+def calculer_teta(bx,by) :
     global entry1
     global entry2
     global entry3
@@ -354,14 +281,15 @@ def simuler():
     entry0.insert(END, str(f"\nLa duree de la simulation est de {int(entry9.get())} secondes"))
     fig = plt.figure(figsize=(6,5),dpi=100)
     ax = fig.add_subplot(111)
+    ax.grid()
     ax.invert_xaxis()
     ax.axis('off')
     fig = plt.figure()
     ax = plt.subplot(111)
     ax.set_xlabel("Y")
     ax.set_ylabel("X")
-    chart = FigureCanvasTkAgg(fig,window)
-    chart.get_tk_widget().place(x = 380, y = 105, width=380+159, height=105+223)
+    chart_type = FigureCanvasTkAgg(fig,window)
+    chart_type.get_tk_widget().place(x = 380, y = 105, width=380+159, height=105+223)
 
 
     ax.clear()
@@ -371,107 +299,102 @@ def simuler():
     L0=float(entry1.get())
     L1=float(entry2.get())
     L2=float(entry3.get())
-    th1=float(entry4.get())
-    th2=float(entry5.get())
-    by=float(entry7.get())
-    bx=float(entry6.get())
-    nbrpas=float(entry8.get())
-    nbrpas=int(nbrpas)
-    point_A=repereA3_A2_A1(L0,L1,L2,th1,th2)
-    a3x=point_A[2][1]
-    a3y=point_A[2][0]
-    a2x=point_A[1][1]
-    a2y=point_A[1][0]
-    varx=a3x-bx
-    vary=a3y-by
-    xpoint_seg=[]
-    ypoint_seg=[]
-    angles_theta1_point=[]
-    angles_theta2_point=[]
-    A3pointx_graph=[]
-    A3pointy_graph=[]
-    A2pointx_graph=[]
-    A2pointy_graph=[]
+    teta1=float(entry4.get())
+    teta2=float(entry5.get())
+    B = (float(entry6.get()), float(entry7.get()))
+    pas=int(entry8.get())
+    pointsA=passage_repere_A1_A2_A3(L0,L1,L2,teta1,teta2)
+    A3 = (pointsA[2][1], pointsA[2][0])
+    A2 = (pointsA[1][1], pointsA[1][0])
+    xDif=A3[0]-B[0]
+    yDif=A3[1]-B[1]
+    listeAbscisses=[]
+    listeOrdonnees=[]
+    listeTeta1=[]
+    listeTeta2=[]
+    listePointA3abscisses=[]
+    listePointA3ordonnees=[]
+    listePointA2abscisses=[]
+    listePointA2ordonnees=[]
     
     #Ajout du point final à la liste des points à dessiner
-    angle=cal_theta(by,bx)
-    coordonne=repereA3_A2_A1(L0,L1,L2,angle[0],angle[1])
-    A3pointx_graph.append(coordonne[2][1])
-    A3pointy_graph.append(coordonne[2][0])
-    A2pointx_graph.append(coordonne[1][1])
-    A2pointy_graph.append(coordonne[1][0])
+    fi=calculer_teta(B[1],B[0])
+    coord=passage_repere_A1_A2_A3(L0,L1,L2,fi[0],fi[1])
+    listePointA3abscisses.append(coord[2][1])
+    listePointA3ordonnees.append(coord[2][0])
+    listePointA2abscisses.append(coord[1][1])
+    listePointA2ordonnees.append(coord[1][0])
     
     #Fixation du repere
     fig = plt.figure(figsize=(6,5),dpi=100)
     ax = fig.add_subplot(111)
     fig = plt.figure()
     ax = plt.subplot(111)
+    ax.grid()
     ax.invert_xaxis()
     ax.set_xlabel("Y")
     ax.set_ylabel("X")
-    chart = FigureCanvasTkAgg(fig,window)
-    chart.get_tk_widget().place(x = 380, y = 105, width=380+159, height=105+223)
+    chart_type = FigureCanvasTkAgg(fig,window)
+    chart_type.get_tk_widget().place(x = 380, y = 105, width=380+159, height=105+223)
 
     #Segmentation en nombre de pas
-    for i in range(nbrpas-1) :
-        xpoint_seg.append((i+1)*varx/(nbrpas)+bx)
-        ypoint_seg.append((i+1)*vary/(nbrpas)+by)
-    for i in range(nbrpas-1) :
-        angle=cal_theta(ypoint_seg[i],xpoint_seg[i])
-        angles_theta1_point.append(angle[0])
-        angles_theta2_point.append(angle[1])
-    for i in range(nbrpas-1) :
-        coordonne=repereA3_A2_A1(L0,L1,L2,angles_theta1_point[i],angles_theta2_point[i])
-        A3pointx_graph.append(coordonne[2][1])
-        A3pointy_graph.append(coordonne[2][0])
-        A2pointx_graph.append(coordonne[1][1])
-        A2pointy_graph.append(coordonne[1][0])
+    for i in range(pas-1) :
+        listeAbscisses.append((i+1)*xDif/(pas)+B[0])
+        listeOrdonnees.append((i+1)*yDif/(pas)+B[1])
+    for i in range(pas-1) :
+        fi=calculer_teta(listeOrdonnees[i],listeAbscisses[i])
+        listeTeta1.append(fi[0])
+        listeTeta2.append(fi[1])
+    for i in range(pas-1) :
+        coord=passage_repere_A1_A2_A3(L0,L1,L2,listeTeta1[i],listeTeta2[i])
+        listePointA3abscisses.append(coord[2][1])
+        listePointA3ordonnees.append(coord[2][0])
+        listePointA2abscisses.append(coord[1][1])
+        listePointA2ordonnees.append(coord[1][0])
         
-    # Animation
     ax.clear()
-    #ax.yaxis.set_ticks_position('right')
     ax.invert_xaxis()
     ax.set_xlabel("Y")
+    ax.grid()
     ax.set_ylabel("X")
-    #ax.axis([8,-1,-1,8])
-    chart = FigureCanvasTkAgg(fig,window)
-    chart.get_tk_widget().place(x = 380, y = 105, width=380+159, height=105+223)
-    coordonne=repereA3_A2_A1(L0,L1,L2,th1,th2)
-    ax.plot([bx,a3x],[by,a3y], '--')
+    chart_type = FigureCanvasTkAgg(fig,window)
+    chart_type.get_tk_widget().place(x = 380, y = 105, width=380+159, height=105+223)
+    coord=passage_repere_A1_A2_A3(L0,L1,L2,teta1,teta2)
+    ax.plot([B[0],A3[0]],[B[1],A3[1]], '--')
 
-    for i in range(nbrpas-1) :
-        ax.plot(xpoint_seg[i],ypoint_seg[i],'x', lw=5, color='black')
-    ax.plot(bx,by,'o-')
+    for i in range(pas-1) :
+        ax.plot(listeAbscisses[i],listeOrdonnees[i],'x', lw=5, color='black')
+    ax.plot(B[0],B[1],'o-')
     ax.plot([0,0],[0,L0])
-    x_points = [coordonne[0][0],coordonne[1][1],coordonne[2][1]]
-    y_points = [coordonne[0][1],coordonne[1][0],coordonne[2][0]]
-    tige, = ax.plot(x_points, y_points, 'o-')
-    ax.plot(coordonne[2][1],coordonne[2][0],'o-')
-    tige.set_markevery(0.3)
-    tige.set_mec('orange')
-    tige.set_mew('2.5')
-    org, = ax.plot(coordonne[2][1], coordonne[2][0],marker="D",markersize=5)
+    x_points = [coord[0][0],coord[1][1],coord[2][1]]
+    y_points = [coord[0][1],coord[1][0],coord[2][0]]
+    droite, = ax.plot(x_points, y_points, 'o-')
+    ax.plot(coord[2][1],coord[2][0],'o-')
+    droite.set_markevery(0.3)
+    droite.set_mec('orange')
+    droite.set_mew('2.5')
+    org, = ax.plot(coord[2][1], coord[2][0],marker="D",markersize=5)
     
     #ajout du point initiale a la liste
-    pointfinal=repereA3_A2_A1(L0,L1,L2,th1,th2)
-    A3pointx_graph.append(pointfinal[2][1])
-    A3pointy_graph.append(pointfinal[2][0])
-    A2pointx_graph.append(pointfinal[1][1])
-    A2pointy_graph.append(pointfinal[1][0])    
-    k=nbrpas
+    dernierPoint=passage_repere_A1_A2_A3(L0,L1,L2,teta1,teta2)
+    listePointA3abscisses.append(dernierPoint[2][1])
+    listePointA3ordonnees.append(dernierPoint[2][0])
+    listePointA2abscisses.append(dernierPoint[1][1])
+    listePointA2ordonnees.append(dernierPoint[1][0])    
+    k=pas
 
 
     for p in range(k+1):
         #Mise à jours des valeur
         z = multiprocessing.Process(target=playsound, args=("./Music/mouvement.wav",))
         z.start()
-        x_points =[0,A2pointx_graph[k-p],A3pointx_graph[k-p]]
-        y_points =[L0,A2pointy_graph[k-p],A3pointy_graph[k-p]] 
-        tige.set_data(x_points,y_points)
-        org.set_data(A3pointx_graph[k-p],A3pointy_graph[k-p])
+        x_points =[0,listePointA2abscisses[k-p],listePointA3abscisses[k-p]]
+        y_points =[L0,listePointA2ordonnees[k-p],listePointA3ordonnees[k-p]] 
+        droite.set_data(x_points,y_points)
+        org.set_data(listePointA3abscisses[k-p],listePointA3ordonnees[k-p])
         fig.canvas.draw()
         fig.canvas.flush_events()
-        time.sleep(duree/nbrpas)
+        time.sleep(duree/pas)
         z.terminate()
         
 

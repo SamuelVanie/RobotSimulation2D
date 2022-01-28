@@ -1,9 +1,12 @@
 from tkinter import *
+from playsound import playsound
+from tkinter import messagebox
 import matplotlib.pyplot as plt
 import numpy as np
 from math import cos, degrees, sin, atan2, atan, radians, sqrt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import time
+import multiprocessing
 
 
 """
@@ -12,6 +15,8 @@ quitter
 """
 def quitter():
     global window
+    playsound('./Music/end.wav')
+    time.sleep(0.4)
     window.destroy()
 
 
@@ -22,6 +27,7 @@ demo
 """
 def demo():
 
+    global entry0
     global entry1
     global entry2
     global entry3
@@ -32,6 +38,7 @@ def demo():
     global entry8
     global entry9
 
+    entry0.insert(END, str("\nDes variables de démo ont été définies"))
     entry1.delete(0, END)
     entry2.delete(0, END)
     entry3.delete(0, END)
@@ -57,6 +64,7 @@ nouveau
 reinitialise les données
 """
 def nouveau():
+    global entry0
     global entry1
     global entry2
     global entry3
@@ -65,6 +73,9 @@ def nouveau():
     global entry6
     global entry7
     global entry8
+
+    #insertion message log
+    entry0.insert(END, str("\nRéinitialiation des variables"))
 
     entry1.delete(0, END)
     entry2.delete(0, END)
@@ -132,6 +143,10 @@ def dessiner():
     global entry2
     # longueur lien 1
     global entry1
+    # définition des logs
+    global entry0
+
+    entry0.insert(END, str("\nDessin du robot dans sa position initiale"))
 
     figure = plt.Figure(figsize=(6,5), dpi=100)
 
@@ -324,6 +339,7 @@ def cal_theta(bx,by) :
 def simuler():
 #Definition du graphe
     global window
+    global entry0
     global entry1
     global entry2
     global entry3
@@ -334,6 +350,8 @@ def simuler():
     global entry8
     global entry9
 
+    entry0.insert(END, str("\nDebut de simulation"))
+    entry0.insert(END, str(f"\nLa duree de la simulation est de {entry9.get()} secondes"))
     fig = plt.figure(figsize=(6,5),dpi=100)
     ax = fig.add_subplot(111)
     ax.invert_xaxis()
@@ -445,6 +463,8 @@ def simuler():
 
     for p in range(k+1):
         #Mise à jours des valeur
+        z = multiprocessing.Process(target=playsound, args=("./Music/mouvement.wav",))
+        z.start()
         x_points =[0,A2pointx_graph[k-p],A3pointx_graph[k-p]]
         y_points =[L0,A2pointy_graph[k-p],A3pointy_graph[k-p]] 
         tige.set_data(x_points,y_points)
@@ -452,6 +472,8 @@ def simuler():
         fig.canvas.draw()
         fig.canvas.flush_events()
         time.sleep(duree//nbrpas)
+        z.terminate()
+        
 
 
 
@@ -473,6 +495,18 @@ canvas = Canvas(
 # Mettre le canvas sur toute l'etendue de la fenêtre
 canvas.place(x = 0, y = 0)
 
+# Création d'un popup d'aide
+messagebox.showinfo("Aide", """
+        DEMO -> Remplissage des cases par des variables aléatoires
+        DESSINER -> Dessiner le robot dans sa situation initiale
+        SIMULER -> Debuter le déplacement du robot vers la destination finale
+        NOUVEAU -> Effacer toutes les données des champs
+        QUITTER -> Quitter l'application
+        """)
+
+playsound('./Music/Hello.mp3')
+time.sleep(1)
+
 # Ajout du textBox de debogage
 entry0_img = PhotoImage(file = f"img_textBox0.png")
 entry0_bg = canvas.create_image(
@@ -484,11 +518,18 @@ entry0 = Text(
     bg = "#ededed",
     highlightthickness = 0)
 
+# Placement d'un scrollbar de défilement
+scroll = Scrollbar(master=entry0, orient='vertical', command=entry0.yview)
+scroll.pack(side=RIGHT)
+
+entry0.configure(yscrollcommand=scroll.set)
+
 # Placement de la zone de texte
 entry0.place(
     x = 417.0, y = 485,
     width = 465.0,
     height = 170)
+
 
 
 # Rectangle sur lequel on va dessiner le robot
